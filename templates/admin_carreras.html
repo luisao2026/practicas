@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="h4 mb-0">Carreras</h1>
+    <p class="text-muted small mb-0">El <b>código</b> es el que se escribe en la columna CARRERA de la carga masiva de usuarios.</p>
+  </div>
+  <a class="btn btn-istam" href="{% url 'adm_carrera_nueva' %}"><i class="bi bi-plus-lg"></i> Nueva carrera</a>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Código</th><th>Carrera</th><th class="text-center">Prácticas requeridas</th><th class="text-center">Horas por práctica</th><th class="text-center">Estudiantes</th><th class="text-center">Tutores</th><th class="text-center">Convenios</th><th></th></tr></thead>
+  <tbody>{% for c in carreras %}
+    <tr><td><span class="badge bg-istam fs-6">{{ c.codigo }}</span></td><td>{{ c.nombre }}</td>
+      <td class="text-center">{{ c.practicas_requeridas }}</td><td class="text-center">{{ c.horas_por_practica }}</td>
+      <td class="text-center">{{ c.n_estudiantes }}</td><td class="text-center">{{ c.n_tutores }}</td><td class="text-center">{{ c.n_convenios }}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'adm_carrera_editar' c.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'adm_carrera_eliminar' c.pk %}" title="Eliminar"><i class="bi bi-trash"></i></a></td></tr>
+  {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No hay carreras. Cree la primera con el botón "Nueva carrera".</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

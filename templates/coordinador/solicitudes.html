@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<h1 class="h4">Solicitudes de prácticas</h1>
+<ul class="nav nav-pills my-3">
+  {% for val, nombre in estados %}<li class="nav-item"><a class="nav-link {% if estado == val %}active{% endif %}" href="?estado={{ val }}">{{ nombre }}</a></li>{% endfor %}
+  <li class="nav-item"><a class="nav-link {% if not estado %}active{% endif %}" href="?estado=">Todas</a></li>
+</ul>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Fecha</th><th>Estudiante</th><th>Carrera</th><th>Empresa</th><th>Práctica</th><th>Tutor</th><th>Estado</th><th></th></tr></thead>
+  <tbody>{% for s in solicitudes %}
+    <tr><td class="small">{{ s.creado|date:"d/m/Y" }}</td><td>{{ s.estudiante.get_full_name }}</td><td class="small">{{ s.estudiante.carrera }}</td>
+      <td>{{ s.convenio.empresa }}</td><td>{{ s.numero_practica }}</td><td class="small">{{ s.tutor|default:"—" }}</td><td>{% estado s %}</td>
+      <td class="text-end text-nowrap"><a class="btn btn-sm btn-istam" href="{% url 'coo_solicitud_revisar' s.pk %}">Revisar</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'solicitud_detalle' s.pk %}">Ver</a></td></tr>
+  {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No hay solicitudes en este estado.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

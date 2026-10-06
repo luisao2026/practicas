@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h4 mb-0">Revisar solicitud</h1>{% estado s %}
+</div>
+<p class="text-muted">{{ s.estudiante.get_full_name }} · C.I. {{ s.estudiante.cedula }} · {{ s.estudiante.carrera }}</p>
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card"><div class="card-body small">
+    <dl class="row mb-0">
+      <dt class="col-5">Empresa</dt><dd class="col-7">{{ s.convenio.empresa }}</dd>
+      <dt class="col-5">Convenio</dt><dd class="col-7">{{ s.convenio.codigo }}</dd>
+      <dt class="col-5">Práctica N.º</dt><dd class="col-7">{{ s.numero_practica }}</dd>
+      <dt class="col-5">Área</dt><dd class="col-7">{{ s.area }}</dd>
+      <dt class="col-5">Fechas</dt><dd class="col-7">{{ s.fecha_inicio|date:"d/m/Y" }} – {{ s.fecha_fin|date:"d/m/Y" }}</dd>
+      <dt class="col-5">Horas</dt><dd class="col-7">{{ s.horas }}</dd>
+      <dt class="col-5">Justificación</dt><dd class="col-7 pre">{{ s.motivo }}</dd>
+    </dl>
+  </div></div></div>
+  <div class="col-lg-6"><div class="card"><div class="card-body">
+    <form method="post">{% csrf_token %}
+      {% include "parciales/campos.html" %}
+      <p class="small text-muted mt-2">Al aprobar se genera automáticamente la carta de aceptación para firma del Rector.</p>
+      <button class="btn btn-istam mt-1">Registrar decisión</button>
+      <a class="btn btn-outline-secondary mt-1" href="{% url 'coo_solicitudes' %}">Volver</a>
+    </form>
+  </div></div></div>
+</div>
+{% endblock %}

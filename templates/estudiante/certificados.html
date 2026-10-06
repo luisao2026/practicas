@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Mis certificados</h1>
+<div class="card mb-3"><div class="card-body">
+  <div class="d-flex justify-content-between small mb-1"><span>Prácticas culminadas</span><b>{{ culminadas }} de {{ requeridas }}</b></div>
+  <div class="progress" style="height:10px"><div class="progress-bar bg-success" style="width:{% widthratio culminadas requeridas 100 %}%"></div></div>
+  <p class="small text-muted mt-2 mb-0">Al completar todas las prácticas, el Rector emite el certificado final que acredita su aptitud para graduarse.</p>
+</div></div>
+<div class="card"><div class="list-group list-group-flush">
+{% for c in certificados %}
+  <div class="list-group-item d-flex justify-content-between align-items-center">
+    <div><b>{{ c.get_tipo_display }}</b>{% if c.solicitud %} · Práctica {{ c.solicitud.numero_practica }} ({{ c.solicitud.convenio.empresa }}){% endif %}
+      <div class="small text-muted">{{ c.codigo }} · {{ c.fecha|date:"d/m/Y" }} · Emitido por {{ c.emitido_por }}</div></div>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'certificado_descargar' c.pk %}" target="_blank"><i class="bi bi-download"></i> PDF</a>
+  </div>
+{% empty %}
+  <div class="list-group-item text-muted">Aún no tiene certificados emitidos.</div>
+{% endfor %}
+</div></div>
+{% endblock %}

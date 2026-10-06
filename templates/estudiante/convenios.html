@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Convenios de prácticas de mi carrera</h1>
+<form class="d-flex gap-2 my-3" style="max-width:480px">
+  <input name="q" value="{{ q }}" class="form-control" placeholder="Buscar empresa o institución">
+  <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+</form>
+<div class="row g-3">
+{% for c in convenios %}
+  <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body d-flex flex-column">
+    <div class="d-flex justify-content-between"><span class="badge bg-light text-dark">{{ c.empresa.get_tipo_display }}</span>
+      {% if c.vigente %}<span class="badge bg-success">Vigente</span>{% else %}<span class="badge bg-secondary">Fuera de fechas</span>{% endif %}</div>
+    <h2 class="h5 mt-2">{{ c.empresa.nombre }}</h2>
+    <p class="small text-muted mb-2">{{ c.objeto|truncatewords:25 }}</p>
+    <ul class="small list-unstyled mb-3">
+      <li><i class="bi bi-geo-alt"></i> {{ c.empresa.direccion|default:"—" }}</li>
+      <li><i class="bi bi-person-badge"></i> Tutor empresarial: {{ c.tutor_emp_nombre }}</li>
+      <li><i class="bi bi-calendar"></i> {{ c.fecha_inicio|date:"d/m/Y" }} – {{ c.fecha_fin|date:"d/m/Y" }}</li>
+      <li><i class="bi bi-people"></i> Cupos: {{ c.cupos }}</li>
+    </ul>
+    <div class="mt-auto d-flex gap-2">
+      <a class="btn btn-sm btn-istam" href="{% url 'est_solicitud_convenio' c.pk %}">Solicitar práctica aquí</a>
+      {% if c.documento %}<a class="btn btn-sm btn-outline-secondary" href="{{ c.documento.url }}" target="_blank">Ver convenio</a>{% endif %}
+    </div>
+  </div></div></div>
+{% empty %}
+  <p class="text-muted">No hay convenios activos para su carrera.</p>
+{% endfor %}
+</div>
+{% endblock %}

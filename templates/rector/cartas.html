@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<h1 class="h4">Solicitudes de carta de aceptación</h1>
+<p class="text-muted small">1) Genere la solicitud · 2) Fírmela y cargue el PDF firmado · 3) Envíela por correo al tutor empresarial · 4) El tutor empresarial responde con la carta de aceptación.</p>
+<div class="card"><div class="table-responsive">
+<table class="table align-middle mb-0">
+  <thead class="table-light"><tr><th>N.º</th><th>Estudiante</th><th>Empresa / tutor empresarial</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+  <tbody>{% for c in cartas %}
+    {% with te=c.solicitud.convenio.tutor_empresarial %}
+    <tr><td class="small fw-semibold">{{ c.numero }}</td>
+      <td>{{ c.solicitud.estudiante.get_full_name }}<div class="small text-muted">Práctica {{ c.solicitud.numero_practica }}</div></td>
+      <td>{{ c.solicitud.convenio.empresa }}
+        <div class="small {% if te %}text-muted{% else %}text-danger{% endif %}">{% if te %}{{ te.get_full_name }} · {{ te.email }}{% else %}Sin tutor empresarial asignado{% endif %}</div></td>
+      <td>{% estado c %}
+        {% if c.fecha_respuesta %}<div class="small text-muted">{{ c.fecha_respuesta|date:"d/m/Y" }}</div>
+        {% elif c.fecha_envio %}<div class="small text-muted">Enviada {{ c.fecha_envio|date:"d/m/Y" }}</div>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        {% if c.aceptada %}
+          <a class="btn btn-sm btn-success" href="{% url 'carta_aceptacion_descargar' c.pk %}" target="_blank"><i class="bi bi-file-earmark-check"></i> Carta de aceptación</a>
+        {% elif c.estado == 'NO_ACEPTADA' %}
+          <span class="small text-danger">{{ c.observacion_empresa|truncatechars:40 }}</span>
+        {% else %}
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'rec_carta_pdf' c.pk %}" target="_blank" title="Generar solicitud para firmar"><i class="bi bi-file-earmark-pdf"></i> Generar</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'rec_carta_subir' c.pk %}"><i class="bi bi-upload"></i> {% if c.archivo_firmado %}Reemplazar{% else %}Cargar{% endif %} firmada</a>
+          {% if c.archivo_firmado %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'carta_solicitud_ver' c.pk %}" target="_blank" title="Ver firmada"><i class="bi bi-eye"></i></a>{% endif %}
+          <form method="post" action="{% url 'rec_carta_enviar' c.pk %}" class="d-inline">{% csrf_token %}
+            <button class="btn btn-sm btn-success" {% if not c.archivo_firmado or not te %}disabled{% endif %}><i class="bi bi-send"></i> {% if c.estado == 'ENVIADA' %}Reenviar{% else %}Enviar al tutor empresarial{% endif %}</button></form>
+        {% endif %}
+      </td></tr>
+    {% endwith %}
+  {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No hay solicitudes. Se generan cuando el coordinador aprueba una solicitud de prácticas.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

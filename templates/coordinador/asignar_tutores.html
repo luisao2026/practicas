@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">{{ titulo }}</h1>
+{% if subtitulo %}<p class="text-muted mb-1">{{ subtitulo }}</p>{% endif %}
+{% if ayuda %}<p class="small text-muted">{{ ayuda }}</p>{% endif %}
+<div class="card" style="max-width:600px"><div class="card-body">
+  <form method="post">{% csrf_token %}
+    {% for opcion in form.tutores %}
+      <div class="form-check">{{ opcion.tag }} <label class="form-check-label" for="{{ opcion.id_for_label }}">{{ opcion.choice_label }}</label></div>
+    {% empty %}<p class="text-muted">No hay usuarios con rol Docente-tutor. Créelos desde Administración.</p>{% endfor %}
+    <button class="btn btn-istam mt-3">Guardar asignación</button>
+    <a class="btn btn-outline-secondary mt-3" href="javascript:history.back()">Cancelar</a>
+  </form>
+</div></div>
+{% endblock %}

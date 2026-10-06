@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Certificados finales de prácticas preprofesionales</h1>
+<p class="text-muted small">Documento que acredita la aptitud legal del estudiante en el requisito de prácticas para graduarse.</p>
+
+<h2 class="h6 mt-3">Estudiantes aptos</h2>
+<div class="card"><div class="table-responsive">
+<table class="table align-middle mb-0">
+  <thead class="table-light"><tr><th>Estudiante</th><th>Cédula</th><th>Carrera</th><th>Prácticas culminadas</th><th></th></tr></thead>
+  <tbody>{% for e in aptos %}
+    <tr><td>{{ e.get_full_name }}</td><td>{{ e.cedula }}</td><td>{{ e.carrera }}</td><td>{{ e.culm }} / {{ e.carrera.practicas_requeridas|default:2 }}</td>
+      <td class="text-end"><form method="post" action="{% url 'rec_generar_final' e.pk %}">{% csrf_token %}
+        <button class="btn btn-sm btn-success"><i class="bi bi-mortarboard"></i> Emitir certificado final</button></form></td></tr>
+  {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No hay estudiantes aptos pendientes.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+
+<h2 class="h6 mt-4">Emitidos</h2>
+<div class="card"><div class="list-group list-group-flush">
+{% for c in emitidos %}
+  <div class="list-group-item d-flex justify-content-between align-items-center small">
+    <div><b>{{ c.estudiante.get_full_name }}</b> · {{ c.estudiante.carrera }}<br><span class="text-muted">{{ c.codigo }} · {{ c.fecha|date:"d/m/Y" }}</span></div>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'certificado_descargar' c.pk %}" target="_blank">PDF</a></div>
+{% empty %}<div class="list-group-item text-muted small">Ninguno.</div>{% endfor %}
+</div></div>
+
+<h2 class="h6 mt-4">Avance de todos los estudiantes</h2>
+<div class="card"><div class="table-responsive">
+<table class="table table-sm align-middle mb-0">
+  <thead class="table-light"><tr><th>Estudiante</th><th>Carrera</th><th style="width:40%">Avance</th></tr></thead>
+  <tbody>{% for e in en_curso %}
+    <tr><td>{{ e.get_full_name }}</td><td class="small">{{ e.carrera }}</td>
+      <td><div class="progress" style="height:8px"><div class="progress-bar bg-success" style="width:{% widthratio e.culm e.carrera.practicas_requeridas 100 %}%"></div></div>
+        <span class="small text-muted">{{ e.culm }} de {{ e.carrera.practicas_requeridas }}</span></td></tr>
+  {% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

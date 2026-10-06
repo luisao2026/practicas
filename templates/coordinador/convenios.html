@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Convenios de prácticas</h1>
+  <a class="btn btn-istam" href="{% url 'coo_convenio_nuevo' %}"><i class="bi bi-plus-lg"></i> Nuevo convenio</a>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Código</th><th>Empresa</th><th>Carreras</th><th>Representante legal</th><th>Tutor empresarial</th><th>Docentes-tutores</th><th>Vigencia</th><th></th></tr></thead>
+  <tbody>{% for c in convenios %}
+    <tr>
+      <td class="fw-semibold text-nowrap">{{ c.codigo }}</td>
+      <td>{{ c.empresa }}</td>
+      <td class="small">{% for ca in c.carreras.all %}{{ ca.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+      <td class="small">{{ c.rep_legal_nombre }}<div class="text-muted">{{ c.rep_legal_cargo }}</div></td>
+      <td class="small">{{ c.tutor_emp_nombre }}<div class="text-muted">{{ c.tutor_emp_correo }}</div></td>
+      <td class="small">{% for t in c.tutores.all %}{{ t }}<br>{% empty %}<span class="text-danger">Sin asignar</span>{% endfor %}</td>
+      <td class="small">{{ c.fecha_inicio|date:"d/m/Y" }}<br>{{ c.fecha_fin|date:"d/m/Y" }}
+        {% if c.vigente %}<span class="badge bg-success">Vigente</span>{% elif not c.activo %}<span class="badge bg-secondary">Inactivo</span>{% else %}<span class="badge bg-warning text-dark">Fuera de fechas</span>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" title="Asignar docentes-tutores" href="{% url 'coo_convenio_tutores' c.pk %}"><i class="bi bi-people"></i></a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'coo_convenio_editar' c.pk %}"><i class="bi bi-pencil"></i></a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'coo_convenio_eliminar' c.pk %}"><i class="bi bi-trash"></i></a></td>
+    </tr>
+  {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No hay convenios.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

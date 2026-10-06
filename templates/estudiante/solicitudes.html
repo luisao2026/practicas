@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Mis prácticas</h1>
+  <a class="btn btn-istam" href="{% url 'est_solicitud_nueva' %}"><i class="bi bi-plus-lg"></i> Nueva solicitud</a>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>N.º</th><th>Empresa</th><th>Fechas</th><th>Solicitud</th><th>Plan</th><th>Informe</th><th></th></tr></thead>
+  <tbody>
+  {% for s in solicitudes %}
+    <tr>
+      <td>{{ s.numero_practica }}</td>
+      <td>{{ s.convenio.empresa }}<div class="small text-muted">{{ s.area }}</div></td>
+      <td class="small">{{ s.fecha_inicio|date:"d/m/Y" }}<br>{{ s.fecha_fin|date:"d/m/Y" }}</td>
+      <td>{% estado s %}</td>
+      <td>{% if s.plan %}{% estado s.plan %}{% else %}<span class="text-muted small">—</span>{% endif %}</td>
+      <td>{% if s.informe %}{% estado s.informe %}{% else %}<span class="text-muted small">—</span>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'solicitud_detalle' s.pk %}">Ver</a>
+        {% if s.editable %}
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'est_solicitud_editar' s.pk %}"><i class="bi bi-pencil"></i></a>
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'est_solicitud_eliminar' s.pk %}"><i class="bi bi-trash"></i></a>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="text-center text-muted py-4">Aún no tiene solicitudes. <a href="{% url 'est_convenios' %}">Vea los convenios disponibles</a>.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% endblock %}

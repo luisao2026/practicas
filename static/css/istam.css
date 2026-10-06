@@ -1,0 +1,123 @@
+/* ===== Colores institucionales (tomados del logotipo ISTAM) ===== */
+:root {
+  --istam: #006526;          /* verde oscuro */
+  --istam-medio: #197933;    /* verde medio */
+  --istam-claro: #91b423;    /* verde lima */
+  --istam-suave: #eef6e4;    /* fondo verde muy claro */
+  --istam-dorado: #91b423;   /* (compatibilidad) acento */
+
+  /* Bootstrap usa estas variables para enlaces, foco, etc. */
+  --bs-primary: #006526;
+  --bs-primary-rgb: 0, 101, 38;
+  --bs-link-color: #006526;
+  --bs-link-color-rgb: 0, 101, 38;
+  --bs-link-hover-color: #197933;
+  --bs-link-hover-color-rgb: 25, 121, 51;
+  --bs-success: #197933;
+  --bs-success-rgb: 25, 121, 51;
+}
+body { background: #f5f8f2; }
+
+/* Botones */
+.btn-istam, .btn-primary {
+  --bs-btn-color: #fff; --bs-btn-bg: var(--istam); --bs-btn-border-color: var(--istam);
+  --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--istam-medio); --bs-btn-hover-border-color: var(--istam-medio);
+  --bs-btn-active-bg: #004d1d; --bs-btn-active-border-color: #004d1d; --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--istam); --bs-btn-disabled-border-color: var(--istam);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--istam); --bs-btn-border-color: var(--istam);
+  --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--istam); --bs-btn-hover-border-color: var(--istam);
+  --bs-btn-active-bg: var(--istam); --bs-btn-active-border-color: var(--istam); --bs-btn-active-color: #fff;
+}
+.btn-success {
+  --bs-btn-bg: var(--istam-medio); --bs-btn-border-color: var(--istam-medio);
+  --bs-btn-hover-bg: #13662a; --bs-btn-hover-border-color: #13662a;
+  --bs-btn-disabled-bg: var(--istam-medio); --bs-btn-disabled-border-color: var(--istam-medio);
+}
+.btn-outline-success { --bs-btn-color: var(--istam-medio); --bs-btn-border-color: var(--istam-medio);
+  --bs-btn-hover-bg: var(--istam-medio); --bs-btn-hover-border-color: var(--istam-medio); }
+.bg-istam, .bg-primary { background-color: var(--istam) !important; }
+.bg-success { background-color: var(--istam-medio) !important; }
+.text-primary { color: var(--istam) !important; }
+.text-success { color: var(--istam-medio) !important; }
+.border-primary { border-color: var(--istam) !important; }
+.border-success { border-color: var(--istam-claro) !important; }
+.progress-bar.bg-success { background-color: var(--istam-claro) !important; }
+.nav-pills { --bs-nav-pills-link-active-bg: var(--istam); }
+.nav-link { color: var(--istam); }
+.form-control:focus, .form-select:focus { border-color: var(--istam-claro); box-shadow: 0 0 0 .2rem rgba(145, 180, 35, .25); }
+.form-check-input:checked { background-color: var(--istam); border-color: var(--istam); }
+.form-check-input:focus { box-shadow: 0 0 0 .2rem rgba(145, 180, 35, .25); }
+.table-light { --bs-table-bg: var(--istam-suave); }
+
+/* Barra superior blanca con logo y franja verde */
+.topbar { background: #fff; border-bottom: 4px solid var(--istam); box-shadow: 0 2px 6px rgba(0, 0, 0, .05); min-height: 64px; }
+.topbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 4px;
+  background: linear-gradient(90deg, var(--istam) 0%, var(--istam-medio) 50%, var(--istam-claro) 100%); }
+.topbar .logo { height: 42px; width: auto; }
+.topbar .titulo-sistema { color: var(--istam); font-weight: 600; border-left: 2px solid var(--istam-claro); padding-left: .75rem; line-height: 1.1; }
+.topbar .titulo-sistema small { color: #6b7a63; font-weight: 400; display: block; font-size: .72rem; }
+.topbar .usuario { color: #2f3a2a; }
+.topbar .btn-outline-light { --bs-btn-color: var(--istam); --bs-btn-border-color: #cfdcc4;
+  --bs-btn-hover-bg: var(--istam); --bs-btn-hover-color: #fff; --bs-btn-hover-border-color: var(--istam); }
+.topbar .badge-rol { background: var(--istam-suave); color: var(--istam); border: 1px solid #cfe2b5; }
+
+/* Menú lateral */
+.sidebar { width: 260px; flex: 0 0 260px; background: #fff; border-right: 1px solid #e2ead9; }
+@media (min-width: 992px) {
+  .sidebar { position: sticky; top: 68px; height: calc(100vh - 68px); overflow-y: auto; }
+}
+.sidebar { scrollbar-width: thin; scrollbar-color: #c9d8bb transparent; }
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-thumb { background: #c9d8bb; border-radius: 4px; }
+.sidebar .nav-link { color: #2f3a2a; border-radius: .45rem; padding: .45rem .7rem; }
+.sidebar .nav-link:hover { background: var(--istam-suave); color: var(--istam); }
+.sidebar .nav-link.active { background: var(--istam); color: #fff; box-shadow: inset 4px 0 0 var(--istam-claro); }
+.sidebar .nav-link i { width: 1.4rem; display: inline-block; }
+.menu-titulo { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--istam-medio); font-weight: 600; margin: 1rem 0 .3rem .5rem; }
+
+/* Tarjetas y elementos */
+.card { border: 0; box-shadow: 0 1px 3px rgba(16, 40, 16, .08); }
+.tarjeta-num { font-size: 2.2rem; font-weight: 700; }
+h1, .h3, .h4 { color: #173d1f; }
+.pasos { display: flex; gap: .5rem; flex-wrap: wrap; }
+.paso { flex: 1 1 150px; padding: .6rem .8rem; border-radius: .5rem; background: #eef1ea; font-size: .85rem; }
+.paso.ok { background: #dcefc4; color: #1d4d14; }
+.paso.actual { background: #fff3cd; }
+.comentario { border-left: 3px solid var(--istam-claro); padding-left: .8rem; margin-bottom: .8rem; }
+.pre { white-space: pre-line; }
+main { min-width: 0; }
+
+/* Inicio de sesión */
+.login-fondo { min-height: 100vh;
+  background: radial-gradient(circle at 15% 20%, rgba(145, 180, 35, .35), transparent 45%),
+              linear-gradient(135deg, #004d1d 0%, var(--istam) 45%, var(--istam-medio) 100%); }
+.login-fondo .card { border-top: 5px solid var(--istam-claro); }
+.login-logo { max-width: 260px; width: 100%; height: auto; }
+.lema { color: var(--istam-claro); font-style: italic; }
+
+/* Secciones de formularios por formato (FPP06) */
+.seccion-titulo { background: var(--istam); color: #fff; padding: .45rem .9rem; border-radius: .45rem .45rem 0 0;
+  font-weight: 600; font-size: .9rem; letter-spacing: .02em; }
+.seccion-cuerpo { border: 1px solid #dbe7cf; border-top: 0; border-radius: 0 0 .45rem .45rem; background: #fff; padding: 1rem; }
+.nota-formato { font-size: .78rem; color: #5f6f57; background: var(--istam-suave); border-left: 3px solid var(--istam-claro);
+  padding: .35rem .6rem; border-radius: .25rem; }
+
+/* Cronograma del plan de prácticas */
+.cronograma { font-size: .78rem; }
+.cronograma th, .cronograma td { text-align: center; vertical-align: middle; padding: .2rem; }
+.cronograma .mes { background: var(--istam); color: #fff; }
+.cronograma .semana { background: var(--istam-suave); color: var(--istam); }
+.cronograma td.dia { width: 26px; min-width: 26px; cursor: pointer; user-select: none; border: 1px solid #dfe8d6; }
+.cronograma td.dia:hover { background: #e6f2d6; }
+.cronograma td.dia.on { background: var(--istam-claro); }
+.cronograma td.dia.on::after { content: "✓"; color: #fff; font-weight: 700; }
+.cronograma td.actividad { text-align: left; min-width: 260px; }
+.cronograma td.fuera { background: #f1f1f1; cursor: not-allowed; }
+/* Ítem y actividad quedan fijos al desplazar el cronograma horizontalmente */
+.cronograma tbody td:nth-child(1), .cronograma thead tr:first-child th:nth-child(1) { position: sticky; left: 0; z-index: 2; background: #fff; }
+.cronograma tbody td:nth-child(2), .cronograma thead tr:first-child th:nth-child(2) { position: sticky; left: 42px; z-index: 2; background: #fff;
+  box-shadow: 2px 0 0 #dfe8d6; }
+.cronograma thead tr:first-child th:nth-child(1), .cronograma thead tr:first-child th:nth-child(2) { background: var(--istam-suave); }
+.cronograma tbody td:nth-child(1) { width: 42px; min-width: 42px; }

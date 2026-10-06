@@ -1,0 +1,25 @@
+{% if campo.field.widget.input_type == 'checkbox' and campo.field.widget.allow_multiple_selected %}
+<div class="col-12">
+  <label class="form-label fw-semibold small d-block">{{ campo.label }}{% if campo.field.required %} *{% endif %}</label>
+  <div class="d-flex flex-wrap gap-3">
+  {% for opcion in campo %}
+    <div class="form-check">{{ opcion.tag }} <label class="form-check-label" for="{{ opcion.id_for_label }}">{{ opcion.choice_label }}</label></div>
+  {% endfor %}
+  </div>
+  {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+  {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+</div>
+{% elif campo.field.widget.input_type == 'checkbox' %}
+<div class="col-12"><div class="form-check">
+  {{ campo }} <label class="form-check-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+  {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+  {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+</div></div>
+{% else %}
+<div class="{% if campo.field.widget.attrs.rows %}col-12{% else %}col-md-6{% endif %}">
+  <label class="form-label fw-semibold small" for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} *{% endif %}</label>
+  {{ campo }}
+  {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+  {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+</div>
+{% endif %}

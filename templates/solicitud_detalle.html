@@ -1,0 +1,151 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+  <div>
+    <h1 class="h4 mb-0">Práctica {{ s.numero_practica }} · {{ s.convenio.empresa }}</h1>
+    <p class="text-muted mb-0">{{ s.estudiante.get_full_name }} · {{ s.estudiante.carrera|default:"" }}</p>
+  </div>
+  <div>{% estado s %}</div>
+</div>
+
+{# Línea de tiempo del proceso #}
+<div class="pasos my-3">
+  <div class="paso {% if s.estado == 'APROBADO' %}ok{% else %}actual{% endif %}">Solicitud</div>
+  <div class="paso {% if carta.aceptada %}ok{% elif carta %}actual{% endif %}">Carta de aceptación</div>
+  <div class="paso {% if plan.estado == 'APROBADO' %}ok{% elif plan %}actual{% endif %}">Plan</div>
+  <div class="paso {% if informe.estado == 'APROBADO' %}ok{% elif informe %}actual{% endif %}">Informe final</div>
+  <div class="paso {% if ev.archivo_firmado %}ok{% elif ev %}actual{% endif %}">Evaluación empresa</div>
+  <div class="paso {% if informe.certificado_empresa %}ok{% endif %}">Cert. empresa</div>
+  <div class="paso {% for c in certificados %}{% if c.tipo == 'CULMINACION' %}ok{% endif %}{% endfor %}">Certificados</div>
+</div>
+
+<div class="row g-3">
+  {# ---------------- Solicitud ---------------- #}
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Solicitud</h2>
+    <dl class="row small mb-0">
+      <dt class="col-5">Convenio</dt><dd class="col-7">{{ s.convenio.codigo }}</dd>
+      <dt class="col-5">Área</dt><dd class="col-7">{{ s.area }}</dd>
+      <dt class="col-5">Fechas</dt><dd class="col-7">{{ s.fecha_inicio|date:"d/m/Y" }} – {{ s.fecha_fin|date:"d/m/Y" }}</dd>
+      <dt class="col-5">Horas</dt><dd class="col-7">{{ s.horas }}</dd>
+      <dt class="col-5">Docente-tutor</dt><dd class="col-7">{{ s.tutor|default:"Por asignar" }}</dd>
+      <dt class="col-5">Tutor empresarial</dt><dd class="col-7">{{ s.convenio.tutor_emp_nombre }}</dd>
+      <dt class="col-5">Justificación</dt><dd class="col-7 pre">{{ s.motivo }}</dd>
+      {% if s.observacion %}<dt class="col-5">Observación</dt><dd class="col-7 text-danger">{{ s.observacion }}</dd>{% endif %}
+    </dl>
+    {% if user == s.estudiante and s.editable %}
+      <a class="btn btn-sm btn-outline-primary mt-2" href="{% url 'est_solicitud_editar' s.pk %}">Modificar</a>
+      <a class="btn btn-sm btn-outline-danger mt-2" href="{% url 'est_solicitud_eliminar' s.pk %}">Eliminar</a>
+    {% endif %}
+    {% if user.es_admin or user.rol == 'COORDINADOR' %}
+      <a class="btn btn-sm btn-istam mt-2" href="{% url 'coo_solicitud_revisar' s.pk %}">Revisar solicitud</a>
+    {% endif %}
+    {% if carta %}
+      <hr><div class="small">Carta de aceptación <b>{{ carta.numero }}</b>: {% estado carta %}
+      {% if carta.fecha_envio and not carta.fecha_respuesta %}<div class="text-muted">Enviada al tutor empresarial el {{ carta.fecha_envio|date:"d/m/Y" }}</div>{% endif %}
+      {% if carta.aceptada %}<div class="text-muted">Aceptada el {{ carta.fecha_respuesta|date:"d/m/Y" }} · Horario: {{ carta.horario }}</div>
+        <a class="btn btn-sm btn-outline-success mt-2" href="{% url 'carta_aceptacion_descargar' carta.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Carta de aceptación</a>{% endif %}
+      {% if carta.estado == 'NO_ACEPTADA' %}<div class="text-danger">{{ carta.observacion_empresa }}</div>{% endif %}
+      </div>
+    {% endif %}
+  </div></div></div>
+
+  {# ---------------- Plan ---------------- #}
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Plan de prácticas {% if plan %}{% estado plan %}{% endif %}</h2>
+    {% if plan %}
+      <p class="small mb-1"><b>Área(s):</b> {{ plan.areas }} · {{ plan.fecha_inicio|date:"d/m/Y" }} – {{ plan.fecha_fin|date:"d/m/Y" }}</p>
+      <p class="small mb-2"><b>Actividades:</b> {{ plan.actividades|length }} programada{{ plan.actividades|length|pluralize }}</p>
+      <a class="btn btn-sm btn-outline-primary mb-1" href="{% url 'plan_pdf' s.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Descargar FPP06</a>
+      {% if plan.archivo %}<a class="btn btn-sm btn-outline-success mb-1" href="{{ plan.archivo.url }}" target="_blank"><i class="bi bi-file-earmark-check"></i> Plan firmado</a>{% endif %}
+      {% if user == s.estudiante and plan.estado == 'APROBADO' %}
+        <a class="btn btn-sm btn-istam mb-1" href="{% url 'est_plan_firmado' s.pk %}"><i class="bi bi-upload"></i> {% if plan.archivo %}Reemplazar{% else %}Subir{% endif %} plan firmado</a>
+        {% if not plan.archivo %}<p class="small text-muted mb-1">Imprima el FPP06, hágalo firmar por su tutor empresarial y su tutor académico, fírmelo y súbalo en PDF.</p>{% endif %}
+      {% endif %}
+      {% if plan.comentarios.all %}<h3 class="h6 mt-3">Comentarios del tutor</h3>
+        {% for c in plan.comentarios.all %}<div class="comentario small"><b>{{ c.autor }}</b> · {{ c.fecha|date:"d/m/Y H:i" }}<br>{{ c.texto }}</div>{% endfor %}
+      {% endif %}
+    {% else %}<p class="text-muted small">Aún no registrado.</p>{% endif %}
+    {% if user == s.estudiante and s.estado == 'APROBADO' and not carta.aceptada %}
+      <p class="small text-warning mb-0"><i class="bi bi-hourglass-split"></i> Podrá registrar el plan cuando el tutor empresarial emita la carta de aceptación.</p>
+    {% endif %}
+    {% if user == s.estudiante and s.estado == 'APROBADO' and carta.aceptada %}
+      {% if not plan %}<a class="btn btn-sm btn-istam" href="{% url 'est_plan' s.pk %}">Crear plan</a>
+      {% elif plan.editable %}
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'est_plan' s.pk %}">Modificar plan</a>
+        {% if not informe %}<a class="btn btn-sm btn-outline-danger" href="{% url 'est_plan_eliminar' s.pk %}">Eliminar</a>{% endif %}
+      {% endif %}
+    {% endif %}
+    {% if plan and user.rol == 'TUTOR' or plan and user.es_admin %}
+      <a class="btn btn-sm btn-istam" href="{% url 'tut_plan_revisar' plan.pk %}">Revisar plan</a>
+    {% endif %}
+  </div></div></div>
+
+  {# ---------------- Informe ---------------- #}
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Informe final {% if informe %}{% estado informe %} <span class="badge bg-light text-dark">v{{ informe.version }}</span>{% endif %}</h2>
+    {% if informe %}
+      <p class="small mb-1"><b>Horas cumplidas:</b> {{ informe.horas_cumplidas }}</p>
+      <p class="small mb-1"><b>Resumen:</b> {{ informe.resumen|truncatewords:40 }}</p>
+      {% if informe.archivo %}<a class="small d-block" href="{{ informe.archivo.url }}" target="_blank"><i class="bi bi-paperclip"></i> Informe adjunto</a>{% endif %}
+      {% if informe.certificado_empresa %}<a class="small d-block" href="{{ informe.certificado_empresa.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Certificado emitido por la empresa</a>
+      {% else %}<p class="small text-warning mb-1"><i class="bi bi-exclamation-circle"></i> Falta el certificado de la empresa.</p>{% endif %}
+      {% if informe.observaciones.all %}<h3 class="h6 mt-3">Observaciones</h3>
+        {% for o in informe.observaciones.all %}<div class="comentario small {% if o.atendida %}text-muted{% endif %}"><b>v{{ o.version }}</b> · {{ o.fecha|date:"d/m/Y" }} {% if o.atendida %}<span class="badge bg-success">atendida</span>{% endif %}<br>{{ o.texto }}</div>{% endfor %}
+      {% endif %}
+    {% else %}<p class="text-muted small">Aún no registrado.</p>{% endif %}
+    {% if user == s.estudiante and plan.estado == 'APROBADO' %}
+      {% if not informe %}<a class="btn btn-sm btn-istam" href="{% url 'est_informe' s.pk %}">Crear informe final</a>
+      {% elif informe.editable %}
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'est_informe' s.pk %}">{% if informe.estado == 'PENDIENTE' %}Modificar{% else %}Corregir{% endif %} informe</a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'est_informe_eliminar' s.pk %}">Eliminar</a>
+      {% endif %}
+      {% if informe %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'est_cert_empresa' s.pk %}"><i class="bi bi-upload"></i> Cargar certificado de la empresa</a>{% endif %}
+    {% endif %}
+    {% if informe and user.rol == 'TUTOR' or informe and user.es_admin %}
+      <a class="btn btn-sm btn-istam" href="{% url 'tut_informe_revisar' informe.pk %}">Revisar informe</a>
+    {% endif %}
+  </div></div></div>
+
+  {# ---------------- Evaluación FPP08 ---------------- #}
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Evaluación del tutor empresarial (FPP08)
+      {% if ev.archivo_firmado %}<span class="badge bg-success">Firmada</span>{% elif ev %}<span class="badge bg-info text-dark">Por firmar</span>{% endif %}</h2>
+    {% if ev %}
+      <p class="small mb-2">Nota final: <b class="fs-5">{{ ev.nota_final|floatformat:2 }}</b> / 10 · Evaluado por {{ ev.evaluador }}</p>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'evaluacion_pdf' s.pk %}" target="_blank"><i class="bi bi-printer"></i> Imprimir FPP08</a>
+      {% if ev.archivo_firmado %}
+        <a class="btn btn-sm btn-outline-success" href="{% url 'evaluacion_firmada_ver' s.pk %}" target="_blank"><i class="bi bi-file-earmark-check"></i> Ver firmada</a>
+        <div class="small text-muted mt-1">Subida el {{ ev.fecha_subida|date:"d/m/Y" }}</div>
+      {% endif %}
+      {% if user == s.estudiante %}
+        <a class="btn btn-sm btn-istam" href="{% url 'est_evaluacion_subir' s.pk %}"><i class="bi bi-upload"></i> {% if ev.archivo_firmado %}Reemplazar{% else %}Subir{% endif %} firmada</a>
+        {% if not ev.archivo_firmado %}<p class="small text-muted mt-2 mb-0">Imprima el formato, fírmelo junto con su tutor empresarial, escanéelo y súbalo en PDF.</p>{% endif %}
+      {% endif %}
+    {% elif carta.aceptada %}
+      <p class="text-muted small mb-0">El tutor empresarial aún no registra la evaluación.</p>
+    {% else %}
+      <p class="text-muted small mb-0">Disponible cuando la empresa acepte la práctica.</p>
+    {% endif %}
+    {% if user.rol == 'TUTOR_EMP' or user.es_admin %}{% if carta.aceptada %}
+      <a class="btn btn-sm btn-outline-primary mt-2" href="{% url 'te_evaluacion' s.pk %}"><i class="bi bi-clipboard-check"></i> {% if ev %}Ver / editar{% else %}Evaluar{% endif %}</a>
+    {% endif %}{% endif %}
+  </div></div></div>
+
+  {# ---------------- Certificados ---------------- #}
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Certificados de esta práctica</h2>
+    {% for c in certificados %}
+      <div class="d-flex justify-content-between align-items-center border-bottom py-2 small">
+        <div><b>{{ c.get_tipo_display }}</b><br><span class="text-muted">{{ c.codigo }} · {{ c.emitido_por }}</span></div>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'certificado_descargar' c.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+      </div>
+    {% empty %}<p class="text-muted small">Aún no hay certificados.</p>{% endfor %}
+    {% if informe.estado == 'APROBADO' and user.rol == 'TUTOR' or informe.estado == 'APROBADO' and user.es_admin %}
+      {% if not ev.archivo_firmado %}<p class="small text-warning mt-2 mb-1"><i class="bi bi-exclamation-circle"></i> Requiere la evaluación FPP08 firmada.</p>{% endif %}
+      <form method="post" action="{% url 'tut_generar_aprobacion' s.pk %}" class="mt-2">{% csrf_token %}
+        <button class="btn btn-sm btn-success"><i class="bi bi-award"></i> Generar certificado de aprobación</button></form>
+    {% endif %}
+  </div></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card mx-auto" style="max-width:480px"><div class="card-body">
+  <h1 class="h5"><i class="bi bi-shield-lock"></i> Cambiar contraseña</h1>
+  {% if user.debe_cambiar_clave %}
+    <div class="alert alert-warning small">Por seguridad, debe cambiar su contraseña inicial (su cédula) antes de continuar.</div>
+  {% endif %}
+  <form method="post">{% csrf_token %}
+    {% for campo in form %}
+      <div class="mb-3">
+        <label class="form-label small fw-semibold" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+        {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <p class="small text-muted">Mínimo 8 caracteres.</p>
+    <button class="btn btn-istam w-100">Guardar nueva contraseña</button>
+  </form>
+</div></div>
+{% endblock %}

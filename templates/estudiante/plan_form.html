@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{% url 'solicitud_detalle' s.pk %}" class="small">&larr; Volver a mi práctica</a>
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mt-1 mb-3">
+  <div>
+    <h1 class="h4 mb-0">Plan de prácticas del estudiante</h1>
+    <p class="text-muted small mb-0">Formato FPP06 · Práctica {{ s.numero_practica }} en {{ s.convenio.empresa }}</p>
+  </div>
+  {% if plan %}<a class="btn btn-outline-primary" href="{% url 'plan_pdf' s.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Descargar FPP06</a>{% endif %}
+</div>
+
+{% if plan.estado == 'RECHAZADO' %}
+<div class="alert alert-warning"><b>Su docente-tutor rechazó el plan.</b> Revise los comentarios en el detalle de la práctica, corrija y vuelva a guardar.</div>
+{% endif %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}<br>{% endfor %}</div>{% endif %}
+
+<form method="post" id="form-plan">{% csrf_token %}
+{{ form.actividades_json }}
+
+{# ---------------- I. DATOS DEL ESTUDIANTE ---------------- #}
+<div class="mb-4">
+  <div class="seccion-titulo">I.- DATOS DEL ESTUDIANTE</div>
+  <div class="seccion-cuerpo">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold small">Apellidos y nombres</label>
+        <input class="form-control" value="{{ s.estudiante.last_name }} {{ s.estudiante.first_name }}" disabled>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold small">Cédula · Carrera</label>
+        <input class="form-control" value="{{ s.estudiante.cedula }} · {{ s.estudiante.carrera }}" disabled>
+      </div>
+      {% include "parciales/campo.html" with campo=form.est_direccion %}
+      <div class="col-md-6"><div class="row g-3">
+        <div class="col-sm-5">{% include "parciales/campo_simple.html" with campo=form.est_telefono %}</div>
+        <div class="col-sm-7">{% include "parciales/campo_simple.html" with campo=form.est_email %}</div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+{# ---------------- II. DATOS DE LA EMPRESA ---------------- #}
+<div class="mb-4">
+  <div class="seccion-titulo">II.- DATOS DE LA EMPRESA</div>
+  <div class="seccion-cuerpo">
+    <p class="nota-formato mb-3"><i class="bi bi-magic"></i> Estos datos se llenaron con la información del convenio. Corríjalos si algo cambió.</p>
+    <div class="row g-3">
+      <div class="col-md-8">{% include "parciales/campo_simple.html" with campo=form.emp_razon_social %}</div>
+      <div class="col-md-4">{% include "parciales/campo_simple.html" with campo=form.emp_ruc %}</div>
+      <div class="col-md-12">{% include "parciales/campo_simple.html" with campo=form.emp_direccion %}</div>
+      <div class="col-md-4">{% include "parciales/campo_simple.html" with campo=form.emp_telefono %}</div>
+      <div class="col-md-8">{% include "parciales/campo_simple.html" with campo=form.emp_email %}</div>
+
+      <div class="col-12"><hr class="my-1"></div>
+      <div class="col-md-5">{% include "parciales/campo_simple.html" with campo=form.ger_nombre %}</div>
+      <div class="col-md-3">{% include "parciales/campo_simple.html" with campo=form.ger_telefono %}</div>
+      <div class="col-md-4">{% include "parciales/campo_simple.html" with campo=form.ger_email %}</div>
+      <div class="col-md-5">{% include "parciales/campo_simple.html" with campo=form.jefe_nombre %}</div>
+      <div class="col-md-3">{% include "parciales/campo_simple.html" with campo=form.jefe_cargo %}</div>
+      <div class="col-md-4">{% include "parciales/campo_simple.html" with campo=form.jefe_email %}</div>
+
+      <div class="col-12"><hr class="my-1"></div>
+      <div class="col-md-6">{% include "parciales/campo_simple.html" with campo=form.areas %}</div>
+      <div class="col-md-3">{% include "parciales/campo_simple.html" with campo=form.fecha_inicio %}</div>
+      <div class="col-md-3">{% include "parciales/campo_simple.html" with campo=form.fecha_fin %}</div>
+      <div class="col-12">
+        {% include "parciales/campo_simple.html" with campo=form.resultados_aprendizaje %}
+        <div class="nota-formato mt-1">Tomados del plan de prácticas del docente tutor; se pueden adicionar según el requerimiento de la empresa. Comunique al tutor académico.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ---------------- III. ACTIVIDADES ---------------- #}
+<div class="mb-4">
+  <div class="seccion-titulo">III.- ACTIVIDADES PRINCIPALES A REALIZARSE EN LA EMPRESA</div>
+  <div class="seccion-cuerpo">
+    <p class="nota-formato mb-3"><i class="bi bi-info-circle"></i> Solicite al tutor académico las actividades a desarrollar en la empresa.
+      Escriba cada actividad y <b>haga clic (o arrastre) sobre los días</b> en que la realizará. Las semanas se calculan con las fechas de inicio y término.</p>
+    <div class="table-responsive">
+      <table class="table table-bordered cronograma mb-2" id="cronograma">
+        <thead></thead><tbody></tbody>
+      </table>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-primary" id="agregar"><i class="bi bi-plus-lg"></i> Agregar actividad</button>
+    <span class="small text-muted ms-2">L M X J V = lunes a viernes</span>
+  </div>
+</div>
+
+<div class="d-flex gap-2 flex-wrap">
+  <button class="btn btn-istam"><i class="bi bi-send"></i> Guardar y enviar al docente-tutor</button>
+  <a class="btn btn-outline-secondary" href="{% url 'solicitud_detalle' s.pk %}">Cancelar</a>
+</div>
+</form>
+
+<script>
+(function () {
+  const inpIni = document.getElementById("{{ form.fecha_inicio.id_for_label }}");
+  const inpFin = document.getElementById("{{ form.fecha_fin.id_for_label }}");
+  const oculto = document.getElementById("{{ form.actividades_json.id_for_label }}");
+  const tabla = document.getElementById("cronograma");
+  const MAX_SEMANAS = {{ plan.MAX_SEMANAS|default:16 }};
+  const LETRAS = ["L", "M", "X", "J", "V"];
+  let filas = [];
+  try { filas = JSON.parse(oculto.value || "[]"); } catch (e) { filas = []; }
+  filas = filas.map(f => ({actividad: f.actividad || "", dias: new Set(f.dias || [])}));
+  if (!filas.length) filas = [{actividad: "", dias: new Set()}];
+
+  function fecha(v) { if (!v) return null; const p = v.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function lunesDe(d) { const x = new Date(d); const w = (x.getDay() + 6) % 7; x.setDate(x.getDate() - w); return x; }
+  function semanas() {
+    const ini = fecha(inpIni.value), fin = fecha(inpFin.value);
+    if (!ini || !fin || fin <= ini) return {n: 8, lunes: null, ini: null, fin: null};
+    const dias = Math.round((fin - ini) / 86400000) + ((ini.getDay() + 6) % 7) + 1;
+    return {n: Math.max(4, Math.min(MAX_SEMANAS, Math.ceil(dias / 7))), lunes: lunesDe(ini), ini: ini, fin: fin};
+  }
+  function dibujar() {
+    const S = semanas();
+    // Encabezado: MES, SEMANA, días
+    let h1 = '<tr><th rowspan="3" style="width:42px">ÍTEM</th><th rowspan="3" class="text-start">ACTIVIDADES</th>';
+    for (let m = 0; m * 4 < S.n; m++) {
+      const span = Math.min(4, S.n - m * 4) * 5;
+      h1 += '<th class="mes" colspan="' + span + '">MES ' + (m + 1) + '</th>';
+    }
+    h1 += '<th rowspan="3"></th></tr><tr>';
+    for (let w = 1; w <= S.n; w++) h1 += '<th class="semana" colspan="5">SEMANA ' + w + '</th>';
+    h1 += '</tr><tr>';
+    for (let w = 1; w <= S.n; w++) for (let d = 0; d < 5; d++) h1 += '<th class="small fw-normal">' + LETRAS[d] + '</th>';
+    tabla.tHead.innerHTML = h1 + '</tr>';
+
+    let cuerpo = "";
+    filas.forEach(function (f, i) {
+      cuerpo += '<tr data-i="' + i + '"><td>' + (i + 1) + '</td>' +
+        '<td class="actividad"><input class="form-control form-control-sm" maxlength="300" placeholder="Describa la actividad" value="' +
+        f.actividad.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '"></td>';
+      for (let w = 1; w <= S.n; w++) for (let d = 1; d <= 5; d++) {
+        const cod = w + "-" + d;
+        let fuera = false, titulo = "Semana " + w + ", " + LETRAS[d - 1];
+        if (S.lunes) {
+          const dia = new Date(S.lunes); dia.setDate(dia.getDate() + (w - 1) * 7 + (d - 1));
+          fuera = dia < S.ini || dia > S.fin;
+          titulo = dia.toLocaleDateString("es-EC", {weekday: "long", day: "numeric", month: "short"});
+        }
+        if (fuera) f.dias.delete(cod);
+        cuerpo += '<td class="dia' + (fuera ? " fuera" : "") + (f.dias.has(cod) ? " on" : "") +
+          '" data-c="' + cod + '" title="' + titulo + '"></td>';
+      }
+      cuerpo += '<td><button type="button" class="btn btn-sm btn-link text-danger p-0 quitar" title="Quitar"><i class="bi bi-trash"></i></button></td></tr>';
+    });
+    tabla.tBodies[0].innerHTML = cuerpo;
+  }
+
+  // Pintar con clic y arrastre
+  let pintando = null;
+  tabla.addEventListener("mousedown", function (e) {
+    const td = e.target.closest("td.dia"); if (!td || td.classList.contains("fuera")) return;
+    e.preventDefault();
+    const f = filas[+td.parentNode.dataset.i];
+    pintando = !f.dias.has(td.dataset.c);
+    alternar(td);
+  });
+  tabla.addEventListener("mouseover", function (e) {
+    if (pintando === null) return;
+    const td = e.target.closest("td.dia"); if (td) alternar(td);
+  });
+  document.addEventListener("mouseup", function () { pintando = null; });
+  function alternar(td) {
+    if (td.classList.contains("fuera")) return;
+    const f = filas[+td.parentNode.dataset.i];
+    if (pintando) { f.dias.add(td.dataset.c); td.classList.add("on"); }
+    else { f.dias.delete(td.dataset.c); td.classList.remove("on"); }
+  }
+  // Pantallas táctiles
+  tabla.addEventListener("touchstart", function (e) {
+    const td = e.target.closest("td.dia"); if (!td || td.classList.contains("fuera")) return;
+    const f = filas[+td.parentNode.dataset.i]; pintando = !f.dias.has(td.dataset.c); alternar(td); pintando = null;
+    e.preventDefault();
+  }, {passive: false});
+
+  tabla.addEventListener("input", function (e) {
+    if (e.target.matches("td.actividad input")) filas[+e.target.closest("tr").dataset.i].actividad = e.target.value;
+  });
+  tabla.addEventListener("click", function (e) {
+    const b = e.target.closest(".quitar"); if (!b) return;
+    filas.splice(+b.closest("tr").dataset.i, 1);
+    if (!filas.length) filas.push({actividad: "", dias: new Set()});
+    dibujar();
+  });
+  document.getElementById("agregar").addEventListener("click", function () {
+    filas.push({actividad: "", dias: new Set()}); dibujar();
+    const inputs = tabla.querySelectorAll("td.actividad input"); inputs[inputs.length - 1].focus();
+  });
+  inpIni.addEventListener("change", dibujar);
+  inpFin.addEventListener("change", dibujar);
+  document.getElementById("form-plan").addEventListener("submit", function () {
+    oculto.value = JSON.stringify(filas.map(f => ({actividad: f.actividad, dias: Array.from(f.dias)})));
+  });
+  dibujar();
+})();
+</script>
+{% endblock %}

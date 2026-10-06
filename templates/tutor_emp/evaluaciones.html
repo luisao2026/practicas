@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Evaluación del desempeño de estudiantes (FPP08)</h1>
+<p class="text-muted small">Estudiantes aceptados en su empresa. Registre la evaluación, imprímala y fírmela junto con el estudiante; luego el estudiante la sube al sistema.</p>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Estudiante</th><th>Carrera</th><th>Práctica</th><th>Área</th><th>Período</th><th>Evaluación</th><th></th></tr></thead>
+  <tbody>{% for s in practicas %}
+    <tr><td>{{ s.estudiante.get_full_name }}</td><td class="small">{{ s.estudiante.carrera }}</td><td>{{ s.numero_practica }}</td>
+      <td class="small">{{ s.area }}</td><td class="small">{{ s.fecha_inicio|date:"d/m/Y" }} – {{ s.fecha_fin|date:"d/m/Y" }}</td>
+      <td>{% if not s.evaluacion %}<span class="badge bg-warning text-dark">Pendiente</span>
+          {% elif s.evaluacion.archivo_firmado %}<span class="badge bg-success">Firmada · {{ s.evaluacion.nota_final|floatformat:2 }}/10</span>
+          {% else %}<span class="badge bg-info text-dark">Registrada · {{ s.evaluacion.nota_final|floatformat:2 }}/10</span>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-sm {% if s.evaluacion %}btn-outline-primary{% else %}btn-istam{% endif %}" href="{% url 'te_evaluacion' s.pk %}">
+          <i class="bi bi-clipboard-check"></i> {% if not s.evaluacion %}Evaluar{% elif s.evaluacion.editable %}Editar{% else %}Ver{% endif %}</a>
+        {% if s.evaluacion %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'evaluacion_pdf' s.pk %}" target="_blank" title="Imprimir"><i class="bi bi-printer"></i></a>{% endif %}
+      </td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aún no tiene estudiantes aceptados.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

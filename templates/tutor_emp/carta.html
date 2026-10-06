@@ -1,0 +1,68 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<a href="{% url 'te_solicitudes' %}" class="small">&larr; Volver a solicitudes</a>
+<div class="d-flex justify-content-between align-items-center mt-1 flex-wrap gap-2">
+  <h1 class="h4 mb-0">Solicitud de carta de aceptación {{ carta.numero }}</h1>{% estado carta %}
+</div>
+<p class="text-muted">{{ s.convenio.empresa }} · Convenio {{ s.convenio.codigo }}</p>
+
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Datos del estudiante y la práctica</h2>
+    <dl class="row small mb-2">
+      <dt class="col-5">Estudiante</dt><dd class="col-7">{{ s.estudiante.get_full_name }}</dd>
+      <dt class="col-5">Cédula</dt><dd class="col-7">{{ s.estudiante.cedula }}</dd>
+      <dt class="col-5">Carrera</dt><dd class="col-7">{{ s.estudiante.carrera }}</dd>
+      <dt class="col-5">Correo / teléfono</dt><dd class="col-7">{{ s.estudiante.email }} {{ s.estudiante.telefono }}</dd>
+      <dt class="col-5">Práctica N.º</dt><dd class="col-7">{{ s.numero_practica }}</dd>
+      <dt class="col-5">Área solicitada</dt><dd class="col-7">{{ s.area }}</dd>
+      <dt class="col-5">Período</dt><dd class="col-7">{{ s.fecha_inicio|date:"d/m/Y" }} – {{ s.fecha_fin|date:"d/m/Y" }}</dd>
+      <dt class="col-5">Horas</dt><dd class="col-7">{{ s.horas }}</dd>
+      <dt class="col-5">Docente-tutor ISTAM</dt><dd class="col-7">{{ s.tutor|default:"—" }}</dd>
+    </dl>
+    {% if carta.archivo_firmado %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'carta_solicitud_ver' carta.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Ver solicitud firmada por el Rector</a>
+    {% endif %}
+  </div></div></div>
+
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+  {% if carta.estado == 'ENVIADA' %}
+    <h2 class="h6 text-uppercase text-muted">Su respuesta</h2>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      {% for opcion in form.decision %}
+        <div class="form-check">{{ opcion.tag }} <label class="form-check-label" for="{{ opcion.id_for_label }}">{{ opcion.choice_label }}</label></div>
+      {% endfor %}
+      <div class="mt-3">
+        <label class="form-label small fw-semibold" for="{{ form.horario.id_for_label }}">{{ form.horario.label }}</label>
+        {{ form.horario }}<div class="form-text">{{ form.horario.help_text }}</div>
+        {% for e in form.horario.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="mt-3">
+        <label class="form-label small fw-semibold" for="{{ form.observacion_empresa.id_for_label }}">Observación <span class="fw-normal text-muted">(obligatoria si no acepta)</span></label>
+        {{ form.observacion_empresa }}
+        {% for e in form.observacion_empresa.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="mt-3">
+        <label class="form-label small fw-semibold" for="{{ form.archivo_aceptacion.id_for_label }}">{{ form.archivo_aceptacion.label }}</label>
+        {{ form.archivo_aceptacion }}<div class="form-text">{{ form.archivo_aceptacion.help_text }}</div>
+        {% for e in form.archivo_aceptacion.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <p class="small text-muted mt-3 mb-2">Al aceptar, el sistema genera la carta de aceptación y la envía por correo al Rector y al estudiante.</p>
+      <button class="btn btn-istam"><i class="bi bi-send-check"></i> Enviar respuesta</button>
+    </form>
+  {% else %}
+    <h2 class="h6 text-uppercase text-muted">Respuesta registrada</h2>
+    <dl class="row small">
+      <dt class="col-5">Estado</dt><dd class="col-7">{% estado carta %}</dd>
+      <dt class="col-5">Fecha</dt><dd class="col-7">{{ carta.fecha_respuesta|date:"d/m/Y H:i" }}</dd>
+      <dt class="col-5">Respondida por</dt><dd class="col-7">{{ carta.respondida_por|default:"—" }}</dd>
+      {% if carta.horario %}<dt class="col-5">Horario</dt><dd class="col-7">{{ carta.horario }}</dd>{% endif %}
+      {% if carta.observacion_empresa %}<dt class="col-5">Observación</dt><dd class="col-7">{{ carta.observacion_empresa }}</dd>{% endif %}
+    </dl>
+    {% if carta.aceptada %}
+      <a class="btn btn-istam" href="{% url 'carta_aceptacion_descargar' carta.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Ver carta de aceptación</a>
+    {% endif %}
+  {% endif %}
+  </div></div></div>
+</div>
+{% endblock %}

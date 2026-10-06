@@ -1,0 +1,4 @@
+<label class="form-label fw-semibold small" for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} *{% endif %}</label>
+{{ campo }}
+{% if campo.help_text and campo.name != "resultados_aprendizaje" %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+{% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}

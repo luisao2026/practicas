@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load istam %}
+{% block content %}
+<h1 class="h4">Solicitudes de prácticas</h1>
+<h2 class="h6 mt-3 text-muted">Estudiantes asignados a mí</h2>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Estudiante</th><th>Empresa</th><th>Práctica</th><th>Solicitud</th><th>Plan</th><th>Informe</th><th></th></tr></thead>
+  <tbody>
+  {% for s in asignadas %}
+    <tr><td>{{ s.estudiante.get_full_name }}</td><td>{{ s.convenio.empresa }}</td><td>{{ s.numero_practica }}</td>
+      <td>{% estado s %}</td>
+      <td>{% if s.plan %}{% estado s.plan %}{% else %}—{% endif %}</td>
+      <td>{% if s.informe %}{% estado s.informe %}{% else %}—{% endif %}</td>
+      <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'solicitud_detalle' s.pk %}">Ver</a></td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Sin estudiantes asignados.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+
+{% if de_convenios %}
+<h2 class="h6 mt-4 text-muted">Otras solicitudes en los convenios que tutorizo</h2>
+<div class="card"><div class="table-responsive">
+<table class="table align-middle mb-0">
+  <thead class="table-light"><tr><th>Estudiante</th><th>Empresa</th><th>Estado</th><th></th></tr></thead>
+  <tbody>{% for s in de_convenios %}
+    <tr><td>{{ s.estudiante.get_full_name }}</td><td>{{ s.convenio.empresa }}</td><td>{% estado s %}</td>
+      <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'solicitud_detalle' s.pk %}">Ver</a></td></tr>
+  {% endfor %}</tbody>
+</table></div></div>
+{% endif %}
+{% endblock %}

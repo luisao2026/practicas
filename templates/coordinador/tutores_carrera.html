@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">Asignación de docentes-tutores por carrera</h1>
+<div class="row g-3 mt-1">
+{% for c in carreras %}
+  <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
+    <h2 class="h6">{{ c.nombre }} <span class="text-muted small">({{ c.codigo }})</span></h2>
+    <p class="small text-muted mb-2">{{ c.practicas_requeridas }} prácticas de {{ c.horas_por_practica }} h</p>
+    <ul class="small mb-3">{% for t in c.tutores.all %}<li>{{ t }}</li>{% empty %}<li class="text-danger">Sin tutores asignados</li>{% endfor %}</ul>
+    <a class="btn btn-sm btn-istam" href="{% url 'coo_carrera_tutores' c.pk %}">Asignar tutores</a>
+  </div></div></div>
+{% empty %}<p class="text-muted">No hay carreras registradas. El administrador las crea en Administración → Carreras.</p>{% endfor %}
+</div>
+{% endblock %}

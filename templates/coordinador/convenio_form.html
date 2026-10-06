@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4">{% if form.instance.pk %}Editar convenio {{ form.instance.codigo }}{% else %}Nuevo convenio{% endif %}</h1>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6 text-uppercase text-muted mb-3">Datos del convenio</h2>
+  <div class="row g-3">
+    {% for campo in form %}{% if campo.name in "codigo empresa objeto cupos fecha_inicio fecha_fin documento activo carreras" %}
+      {% include "parciales/campo.html" %}
+    {% endif %}{% endfor %}
+  </div>
+</div></div>
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6 text-uppercase text-muted mb-3">Representante legal</h2>
+  <div class="row g-3">
+    {% include "parciales/campo.html" with campo=form.rep_legal_nombre %}
+    {% include "parciales/campo.html" with campo=form.rep_legal_cedula %}
+    {% include "parciales/campo.html" with campo=form.rep_legal_cargo %}
+  </div>
+</div></div>
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6 text-uppercase text-muted mb-1">Tutor empresarial</h2>
+  <p class="small text-muted">Es quien recibe la solicitud del Rector y genera la carta de aceptación en el sistema. Ingresa con su cédula.</p>
+  <div class="row g-3">
+    {% include "parciales/campo.html" with campo=form.tutor_empresarial %}
+  </div>
+  <div class="border rounded p-3 mt-3 bg-light">
+    <div class="fw-semibold small mb-2"><i class="bi bi-person-plus"></i> ¿No está en la lista? Regístrelo aquí (su contraseña inicial será su cédula)</div>
+    <div class="row g-3">
+      {% include "parciales/campo.html" with campo=form.te_cedula %}
+      {% include "parciales/campo.html" with campo=form.te_nombres %}
+      {% include "parciales/campo.html" with campo=form.te_apellidos %}
+      {% include "parciales/campo.html" with campo=form.te_correo %}
+      {% include "parciales/campo.html" with campo=form.te_telefono %}
+      {% include "parciales/campo.html" with campo=form.te_cargo %}
+    </div>
+  </div>
+</div></div>
+
+<button class="btn btn-istam"><i class="bi bi-check2"></i> Guardar</button>
+<a class="btn btn-outline-secondary" href="{% url 'coo_convenios' %}">Cancelar</a>
+</form>
+{% endblock %}

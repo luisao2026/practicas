@@ -1,0 +1,97 @@
+{% extends "base.html" %}{% load l10n %}
+{% block content %}
+<a href="{% url 'te_evaluaciones' %}" class="small">&larr; Volver a evaluaciones</a>
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mt-1">
+  <div>
+    <h1 class="h4 mb-0">Evaluación del desempeño por el tutor empresarial</h1>
+    <p class="text-muted small mb-0">Formato FPP08</p>
+  </div>
+  {% if ev %}<a class="btn btn-success" href="{% url 'evaluacion_pdf' s.pk %}" target="_blank"><i class="bi bi-printer"></i> Imprimir para firmar</a>{% endif %}
+</div>
+
+<div class="card my-3"><div class="card-body">
+  <h2 class="h6 text-uppercase text-muted">Datos informativos</h2>
+  <dl class="row small mb-0">
+    <dt class="col-sm-4">Nombre del estudiante</dt><dd class="col-sm-8">{{ s.estudiante.get_full_name }}</dd>
+    <dt class="col-sm-4">Nombre de la empresa</dt><dd class="col-sm-8">{{ s.convenio.empresa }}</dd>
+    <dt class="col-sm-4">Área donde realizó las prácticas</dt><dd class="col-sm-8">{{ s.area }}</dd>
+    <dt class="col-sm-4">Nombre del tutor empresarial</dt><dd class="col-sm-8">{{ s.convenio.tutor_empresarial.get_full_name|default:user.get_full_name }}</dd>
+    <dt class="col-sm-4">Cargo</dt><dd class="col-sm-8">{{ s.convenio.tutor_empresarial.cargo|default:"—" }}</dd>
+    <dt class="col-sm-4">Fecha de inicio de las prácticas</dt><dd class="col-sm-8">{{ s.fecha_inicio|date:"d/m/Y" }}</dd>
+    <dt class="col-sm-4">Fecha de terminación de las prácticas</dt><dd class="col-sm-8">{{ s.fecha_fin|date:"d/m/Y" }}</dd>
+  </dl>
+</div></div>
+
+{% if ev and not ev.editable %}
+  <div class="alert alert-success"><i class="bi bi-check-circle"></i> El estudiante ya subió esta evaluación firmada el {{ ev.fecha_subida|date:"d/m/Y" }}; ya no puede modificarse.</div>
+{% endif %}
+
+<form method="post">{% csrf_token %}
+<div class="card"><div class="table-responsive">
+<table class="table table-bordered align-middle mb-0 small">
+  <thead class="table-light text-center">
+    <tr><th rowspan="2" class="align-middle text-start" style="min-width:320px">ASPECTOS</th>
+        <th rowspan="2" class="align-middle" style="width:120px">Nota (0 a 1)</th>
+        <th colspan="4">NIVEL DE DESEMPEÑO</th></tr>
+    <tr>{% for clave, etiqueta, minimo, maximo in niveles %}<th style="width:105px">{{ etiqueta }}<div class="fw-normal text-muted">({{ minimo|unlocalize }} – {{ maximo|unlocalize }})</div></th>{% endfor %}</tr>
+  </thead>
+  <tbody>
+  {% for campo, grupo, texto, input in filas %}
+    {% ifchanged grupo %}<tr class="table-secondary"><td colspan="6" class="fw-bold">{{ grupo }}</td></tr>{% endifchanged %}
+    <tr data-fila>
+      <td>{{ texto }}{% for e in input.errors %}<div class="text-danger">{{ e }}</div>{% endfor %}</td>
+      <td>{% if ev and not ev.editable %}<input class="form-control form-control-sm nota-fpp08" value="{{ input.value }}" disabled>{% else %}{{ input }}{% endif %}</td>
+      {% for clave, etiqueta, minimo, maximo in niveles %}<td class="text-center celda-nivel" data-nivel="{{ clave }}"></td>{% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+  <tfoot class="fw-bold">
+    <tr><td colspan="2" class="text-end">SUBTOTAL POR NIVEL:</td>
+      {% for clave, etiqueta, minimo, maximo in niveles %}<td class="text-center" data-subtotal="{{ clave }}">0.000</td>{% endfor %}</tr>
+    <tr class="table-light"><td colspan="2" class="text-end">NOTA FINAL:</td><td colspan="4" class="text-center fs-5" id="nota-final">0.00 / 10</td></tr>
+  </tfoot>
+</table>
+</div></div>
+{% if not ev or ev.editable %}
+<div class="d-flex gap-2 mt-3 align-items-center flex-wrap">
+  <button class="btn btn-istam"><i class="bi bi-save"></i> Guardar evaluación</button>
+  <span class="small text-muted">Después de guardar, use <b>Imprimir para firmar</b>. Podrá corregirla hasta que el estudiante suba la versión firmada.</span>
+</div>
+{% endif %}
+</form>
+
+<script>
+(function () {
+  function nivel(v) {
+    if (v >= 0.95) return "EXCELENTE";
+    if (v >= 0.85) return "MUY_BUENO";
+    if (v >= 0.70) return "BUENO";
+    return "REGULAR";
+  }
+  function recalcular() {
+    const sub = {EXCELENTE: 0, MUY_BUENO: 0, BUENO: 0, REGULAR: 0};
+    let total = 0;
+    document.querySelectorAll("tr[data-fila]").forEach(function (fila) {
+      const input = fila.querySelector(".nota-fpp08");
+      const txt = (input.value || "").replace(",", ".");
+      const v = parseFloat(txt);
+      fila.querySelectorAll(".celda-nivel").forEach(function (c) { c.textContent = ""; c.classList.remove("table-success"); });
+      input.classList.remove("is-invalid");
+      if (txt === "" || isNaN(v)) return;
+      if (v < 0 || v > 1) { input.classList.add("is-invalid"); return; }
+      const n = nivel(v);
+      const celda = fila.querySelector('.celda-nivel[data-nivel="' + n + '"]');
+      celda.textContent = v.toFixed(3);
+      celda.classList.add("table-success");
+      sub[n] += v; total += v;
+    });
+    Object.keys(sub).forEach(function (k) {
+      document.querySelector('[data-subtotal="' + k + '"]').textContent = sub[k].toFixed(3);
+    });
+    document.getElementById("nota-final").textContent = total.toFixed(2) + " / 10";
+  }
+  document.querySelectorAll(".nota-fpp08").forEach(function (i) { i.addEventListener("input", recalcular); });
+  recalcular();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{% url 'adm_usuarios' %}" class="small">&larr; Volver a usuarios</a>
+<h1 class="h4 mt-1">Carga masiva de usuarios</h1>
+<div class="row g-3">
+  <div class="col-lg-5"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><span class="badge bg-istam me-1">1</span> Descargue la plantilla</h2>
+    <p class="small text-muted">Trae listas desplegables de roles y carreras, y una hoja con instrucciones.</p>
+    <a class="btn btn-outline-success" href="{% url 'adm_plantilla' %}"><i class="bi bi-download"></i> Descargar plantilla Excel</a>
+    <hr>
+    <h2 class="h6"><span class="badge bg-istam me-1">2</span> Llénela</h2>
+    <ul class="small text-muted mb-0">
+      <li>Obligatorio: <b>cédula, nombres, apellidos, correo y rol</b>. Carrera, obligatoria para estudiantes.</li>
+      <li>La cédula será el <b>usuario</b> y también la <b>contraseña inicial</b>; se pedirá cambiarla en el primer ingreso.</li>
+      <li>Roles: ESTUDIANTE, TUTOR (docente-tutor), TUTOR_EMP (tutor empresarial), COORDINADOR, RECTOR, ADMIN.</li>
+      <li>Para tutores empresariales llene EMPRESA (RUC) y CARGO.</li>
+    </ul>
+    <h3 class="h6 mt-3 mb-2">Códigos de carrera</h3>
+    {% if carreras %}
+    <div style="max-height:220px;overflow-y:auto">
+    <table class="table table-sm small mb-1">
+      <thead class="table-light"><tr><th>Código</th><th>Carrera</th></tr></thead>
+      <tbody>{% for c in carreras %}<tr><td class="fw-semibold">{{ c.codigo }}</td><td>{{ c.nombre }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="small text-danger mb-1">No hay carreras registradas.</p>{% endif %}
+    <a class="small" href="{% url 'adm_carreras' %}"><i class="bi bi-diagram-3"></i> Administrar carreras</a>
+  </div></div></div>
+  <div class="col-lg-7"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><span class="badge bg-istam me-1">3</span> Súbala</h2>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      <div class="mb-3">{{ form.archivo.label_tag }} {{ form.archivo }}
+        {% for e in form.archivo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <div class="form-check mb-3">{{ form.actualizar }} <label class="form-check-label small" for="{{ form.actualizar.id_for_label }}">{{ form.actualizar.label }}</label></div>
+      <button class="btn btn-istam"><i class="bi bi-upload"></i> Cargar usuarios</button>
+    </form>
+  </div></div></div>
+</div>
+
+{% if resultado %}
+<div class="row g-3 mt-1">
+  <div class="col-6 col-md-3"><div class="card border-start border-4 border-success"><div class="card-body py-2"><div class="small text-muted">Creados</div><div class="h3 mb-0 text-success">{{ resultado.creados }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-start border-4 border-primary"><div class="card-body py-2"><div class="small text-muted">Actualizados</div><div class="h3 mb-0 text-primary">{{ resultado.actualizados }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-start border-4 border-secondary"><div class="card-body py-2"><div class="small text-muted">Omitidos (ya existían)</div><div class="h3 mb-0">{{ resultado.omitidos }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card border-start border-4 border-danger"><div class="card-body py-2"><div class="small text-muted">Con errores</div><div class="h3 mb-0 text-danger">{{ resultado.errores }}</div></div></div></div>
+</div>
+<div class="card mt-3"><div class="table-responsive">
+<table class="table table-sm align-middle mb-0">
+  <thead class="table-light"><tr><th>Fila</th><th>Cédula</th><th>Nombre</th><th>Resultado</th><th>Detalle</th></tr></thead>
+  <tbody>{% for fila, cedula, nombre, estado, detalle in resultado.filas %}
+    <tr class="{% if estado == 'error' %}table-danger{% endif %}"><td>{{ fila }}</td><td>{{ cedula }}</td><td>{{ nombre }}</td>
+      <td>{% if estado == 'creado' %}<span class="badge bg-success">Creado</span>{% elif estado == 'actualizado' %}<span class="badge bg-primary">Actualizado</span>{% elif estado == 'omitido' %}<span class="badge bg-secondary">Omitido</span>{% else %}<span class="badge bg-danger">Error</span>{% endif %}</td>
+      <td class="small">{{ detalle }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">El archivo no tiene filas con datos.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% if resultado.errores %}<p class="small text-muted mt-2">Corrija las filas con error en su archivo y vuelva a subirlo: las que ya se crearon se omitirán automáticamente.</p>{% endif %}
+{% endif %}
+{% endblock %}
