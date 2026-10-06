@@ -86,7 +86,8 @@ Copie `.env.example` como `.env`.
 - **Logo**: `static/img/logo_istam.png` (horizontal, usado en la web, cartas y certificados) y `static/img/logo_icono.png` (hoja, usado en los formatos FPP).
 
 ## 7. Publicar en un servidor (VPS)
-Siga la guía paso a paso en [`deploy/GUIA_VPS.md`](deploy/GUIA_VPS.md) (Ubuntu + Nginx + Gunicorn + PostgreSQL + HTTPS).
+- **Con Docker + Apache** (recomendado para el VPS del ISTAM): [`deploy/GUIA_DOCKER_APACHE.md`](deploy/GUIA_DOCKER_APACHE.md)
+- Sin Docker (Nginx + Gunicorn + PostgreSQL): [`deploy/GUIA_VPS.md`](deploy/GUIA_VPS.md)
 
 ## 8. Comandos útiles
 ```bash

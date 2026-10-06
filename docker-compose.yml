@@ -1,0 +1,42 @@
+# Sistema de Prácticas Preprofesionales - ISTAM
+# Uso:  docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: practicas_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-practicas_istam}
+      POSTGRES_USER: ${DB_USER:-practicas}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en el archivo .env}
+      TZ: America/Guayaquil
+    volumes:
+      - practicas_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-practicas} -d ${DB_NAME:-practicas_istam}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    image: practicas_istam:latest
+    container_name: practicas_web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_ENGINE: postgres
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - practicas_media:/app/media
+    # Solo accesible desde el propio servidor; Apache publica el dominio.
+    ports:
+      - "127.0.0.1:${PUERTO:-8081}:8000"
+
+volumes:
+  practicas_db:
+  practicas_media:
